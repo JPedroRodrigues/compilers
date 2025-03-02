@@ -1,5 +1,8 @@
 #include <stdio.h>
 
+// Considering Σ = {a,b}
+// L3 = {W ∈ Σ* | there's no consecutive a's on W}
+
 int noConsecutiveAs(char *word) {
     q0:
         if (*word == 'b') {
