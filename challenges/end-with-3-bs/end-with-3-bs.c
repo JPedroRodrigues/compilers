@@ -1,5 +1,8 @@
 #include <stdio.h>
 
+// Considering Σ = {a, b, c}
+// L6 = { W ∈ Σ* | W end with exactly 3 b's }
+
 int endWith3Bs(char *word) {
     q0:
         if (*word == 'a' || *word == 'c') {
