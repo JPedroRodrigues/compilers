@@ -1,22 +1,18 @@
 #include <stdio.h>
 
-// Considering Σ = {a, b}
-// L2 = {W ∈ Σ* | the W sufix is aa or bb}
+// Considering Σ = {a, b, c}
+// L4 = { a^i b^j c^k | i >= 1, j >= 2, k >= 3 }
 
-int doubleSufix(char *word) {
+int fixedQuantity(char *word) {
     if (*word == 'a') {
         word++;
         goto q1;
-    }
-    if (*word == 'b') {
-        word++;
-        goto q2;
     }
 
     q1:
         if (*word == 'a') {
             word++;
-            goto q3;
+            goto q1;
         }
         if (*word == 'b') {
             word++;
@@ -25,37 +21,43 @@ int doubleSufix(char *word) {
         return 0;
 
     q2:
-        if (*word == 'a') {
-            word++;
-            goto q1;
-        }
         if (*word == 'b') {
+            word++;
+            goto q3;
+        }
+        return 0;
+
+    q3:
+        if (*word == 'b') {
+            word++;
+            goto q3;
+        }
+        if (*word == 'c') {
             word++;
             goto q4;
         }
         return 0;
 
-    q3:
-        if (*word == 'a') {
-            word++;
-            goto q3;
-        }
-        if (*word == 'b') {
-            word++;
-            goto q2;
-        }
-        return 1;
-
     q4:
-        if (*word == 'a') {
+        if (*word == 'c') {
             word++;
-            goto q1;
+            goto q5;
         }
-        if (*word == 'b') {
+        return 0;
+
+    q5:
+        if (*word == 'c') {
             word++;
-            goto q4;
+            goto q6;
         }
-        return 1;
+        return 0;
+
+    q6:
+        if (*word == 'c') {
+            word++;
+            goto q6;
+        }
+        return *word == '\0';
 
     return 0;
 }
@@ -66,6 +68,7 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    printf("\"%s\" ends with \"aa\" or \"bb\": %d\n", argv[1], doubleSufix(argv[1]));
+    printf("Word \"%s\" follows the rule: %d\n", argv[1], fixedQuantity(argv[1]));
+
     return 0;
 }

@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-// Considering Σ = {a,b}
-// L1 = {W ∈ Σ* | W has an odd number of a's}
+// Considering Σ = {a, b}
+// L1 = { W ∈ Σ* | W has an odd number of a's }
 
 int oddA(char *word) {
     evenA:
