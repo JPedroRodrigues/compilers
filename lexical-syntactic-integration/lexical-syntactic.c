@@ -15,6 +15,8 @@ typedef enum {
     ERROR,
     IDENTIFIER,
     NUMBER,
+    SUM,
+    MULTI,
     EOS
 } Token;
 
@@ -26,52 +28,35 @@ typedef struct {
 } TokenInfo;
 
 int line = 1;
-char *strToken[] = { "ERROR", "IDENTIFIER", "NUMBER", "EOS" };
-char *input = "var1     12.4   1.23  1000.01\n\r   variavel insana\n\r caracteres\n\n\nv";
+char *strToken[] = { "ERROR", "IDENTIFIER", "NUMBER", "+", "*", "EOS" };
+char *input = "+ * 1.2 var1 1.0";
 
+// Syntactic
+Token lookahead;
+TokenInfo token_info;
+
+void consume(Token token);
+void E();
 TokenInfo read_number();
 TokenInfo read_id();
 TokenInfo get_token();
 
 int main(int argc, char **argv) {
-    if (argc < 2) {
-        printf("Usage: %s <file_path>\n", argv[0]);
-        return -1;
-    }
+    printf("Analyzing \"%s\"\n", input);
 
-    char *filename = argv[1];
-    FILE *file = fopen(filename, "r");
+    token_info = get_token();
+    lookahead = token_info.token;
 
-    if (file == NULL) {
-        printf("Error while trying to open \"%s\" file.\n", argv[1]);
-        return -1;
-    }
+    E();
+    consume(EOS);
 
-    TokenInfo tokenInfo;
-
-    do {
-        tokenInfo = get_token();
-
-        printf("%03d# %s | ", line, strToken[tokenInfo.token]);
-
-        if (tokenInfo.token == NUMBER) printf("%.3f", tokenInfo.attribute_number);
-        else if (tokenInfo.token == IDENTIFIER) printf("%s", tokenInfo.attribute_id);
-
-        printf("\n");
-    } while (tokenInfo.token != ERROR && tokenInfo.token != EOS);
-
-    fclose(file);
-
-    // Token token = get_token("var1\n\r12.4\n\r");
-    // printf("%d\n", read_id("var1\n\r12.4\n\r"));
-
-    // printf("\"%s\" is recognized by the mini lexical analyzer: %d\n", argv[1], mini_lexical_analyzer(argv[1]));
+    printf("End of Lexical-Sinctatic Analysis\n");
     return 0;
 }
 
 TokenInfo read_number() {
     char number[20];
-    char *lookahead = input;
+    char *lookahead_number = input;
     TokenInfo tokenInfo;
 
     tokenInfo.token = ERROR;
@@ -111,8 +96,8 @@ TokenInfo read_number() {
             return tokenInfo;
         }
 
-        strncpy(number, lookahead, input - lookahead);
-        number[input - lookahead] = '\0';
+        strncpy(number, lookahead_number, input - lookahead_number);
+        number[input - lookahead_number] = '\0';
 
         tokenInfo.token = NUMBER;
         tokenInfo.attribute_number = atof(number);
@@ -122,7 +107,7 @@ TokenInfo read_number() {
 
 TokenInfo read_id() {
     TokenInfo tokenInfo;
-    char *lookahead = input;
+    char *lookahead_id = input;
     char identifier[256];
 
     tokenInfo.token = ERROR;
@@ -149,8 +134,8 @@ TokenInfo read_id() {
 
 
         tokenInfo.token = IDENTIFIER;
-        strncpy(identifier, lookahead, input - lookahead);
-        identifier[input - lookahead] = '\0';
+        strncpy(identifier, lookahead_id, input - lookahead_id);
+        identifier[input - lookahead_id] = '\0';
         strcpy(tokenInfo.attribute_id, identifier);
 
         return tokenInfo;
@@ -175,9 +160,51 @@ TokenInfo get_token() {
     } else if (islower(*input)) {
         tokenInfo = read_id();
     } else if (*input == '\0') {
+        input++;
         tokenInfo.token = EOS;
+    } else if (*input == '+') {
+        input++;
+        tokenInfo.token = SUM;
+    } else if (*input == '*') {
+        input++;
+        tokenInfo.token = MULTI;
     }
 
     tokenInfo.line = line;
     return tokenInfo;
+}
+
+// Given a production:
+// E ::= a | b | +EE | *EE
+
+void E() {
+    switch(lookahead) {
+        case SUM:
+            consume(SUM);
+            E(); E();
+            break;
+
+        case MULTI:
+        consume(MULTI);
+            E(); E();
+            break;
+
+        case IDENTIFIER:
+        case NUMBER:
+            consume(lookahead);
+            break;
+
+        default:
+            exit(-1);
+    }
+}
+
+void consume(Token token) {
+    if (lookahead == token) {
+        token_info = get_token();
+        lookahead = token_info.token;  // get_token
+    } else {
+        printf("Syntax Error: [%s] expected. Found [%s] instead\n", strToken[token], strToken[lookahead]);
+        exit(1);
+    }
 }
